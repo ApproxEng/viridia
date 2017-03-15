@@ -18,6 +18,10 @@
 
 void setup() {
   digitalWrite(ledPin, HIGH);
+  vKp = 0.9;
+  vKi = 0.001;
+  vKd = 0.0;
+  vLPF = 100.0;
   setupPins();
   setupTCInterrupts();
   SerialUSB.begin(115200);
