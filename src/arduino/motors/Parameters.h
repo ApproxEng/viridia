@@ -4,11 +4,15 @@
 #define __PARAMETERS_H__
 
 /*
-   Specify which motor we're building for out of the three
+   Specify which motor we're building for out of the three.
+
+   Motor A is the one immediately clockwise from the Pi when viewed from the
+   top, B the next clockwise from that, and C the other one. Only specify one
+   of these defines.
 */
-#define MOTOR_A
+//#define MOTOR_A
 //#define MOTOR_B
-//#define MOTOR_C
+#define MOTOR_C
 
 #define firmware_version "0.1.3"    //firmware version
 #if defined(MOTOR_A)

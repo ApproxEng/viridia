@@ -8,6 +8,7 @@
 #include "State.h"
 #include "analogFastWrite.h"
 
+// I2C addresses for each motor
 #if defined(MOTOR_A)
 #define I2C_ADDRESS 0x61
 #elif defined(MOTOR_B)
@@ -16,6 +17,17 @@
 #define I2C_ADDRESS 0x63
 #endif
 
+// Comment this out to remove serial terminal functionality
+#define SERIAL_ENABLED
+
+#ifdef SERIAL_ENABLED
+#define SERIAL(message) DO_SERIAL(message)
+#else
+#define SERIAL(message)
+#endif
+#define DO_SERIAL(message) { SerialUSB.print(message); }
+
+// Set up interrupts, pins, SPI, I2C etc.
 void setup() {
   digitalWrite(ledPin, HIGH);
   vKp = 0.9;
@@ -24,15 +36,51 @@ void setup() {
   vLPF = 100.0;
   setupPins();
   setupTCInterrupts();
+#ifdef SERIAL_ENABLED
   SerialUSB.begin(115200);
+#endif
   delay(3000);
+#ifdef SERIAL_ENABLED
   serialMenu();
+#endif
   setupSPI();
   digitalWrite(ledPin, LOW);
   I2CHelper::begin(I2C_ADDRESS);
+  SERIAL(F("Listening for I2C on "))
+  SERIAL(I2C_ADDRESS)
+  SERIAL(F("\n"))
 }
 
+// Loop - check serial if enabled, check I2C
 void loop() {
-  // put your main code here, to run repeatedly:
+#ifdef SERIAL_ENABLED
   serialCheck();
+#endif
+  if (I2CHelper::reader.hasNewData()) {
+    if (I2CHelper::reader.checksumValid()) {
+      switch (I2CHelper::reader.getByte()) {
+        // Set velocity mode and setpoint
+        case 0:
+          setSpeed(I2CHelper::reader.getFloat());
+          break;
+        // Enable control loop
+        case 1:
+          enableTCInterrupts();
+          break;
+        // Disable control loop
+        case 2:
+          disableTCInterrupts();
+          break;
+        default:
+          break;
+      }
+    }
+  }
 }
+
+// Set the speed, including changing any PID gains based on the speed requested
+void setSpeed(float rpm) {
+  mode = 'v';
+  r = rpm;
+}
+
