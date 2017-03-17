@@ -7,6 +7,7 @@
 #include "Parameters.h"
 #include "State.h"
 #include "analogFastWrite.h"
+#include "Interval.h"
 
 // I2C addresses for each motor
 #if defined(MOTOR_A)
@@ -27,6 +28,8 @@
 #endif
 #define DO_SERIAL(message) { SerialUSB.print(message); }
 
+Interval printAngle(500);
+
 // Set up interrupts, pins, SPI, I2C etc.
 void setup() {
   digitalWrite(ledPin, HIGH);
@@ -46,6 +49,7 @@ void setup() {
   setupSPI();
   digitalWrite(ledPin, LOW);
   I2CHelper::begin(I2C_ADDRESS);
+  I2CHelper::onRequest(readWheelPosition);
   SERIAL(F("Listening for I2C on "))
   SERIAL(I2C_ADDRESS)
   SERIAL(F("\n"))
@@ -76,11 +80,29 @@ void loop() {
       }
     }
   }
+#ifdef SERIAL_ENABLED
+  if (printAngle.shouldRun()) {
+    SerialUSB.print(F("Angle is "));
+    SerialUSB.println(yw / 360.0);
+  }
+#endif
 }
 
 // Set the speed, including changing any PID gains based on the speed requested
 void setSpeed(float rpm) {
   mode = 'v';
   r = rpm;
+  if (r < 5.0) {
+    vKi = 0.03;
+  } else if (r < 50) {
+    vKi = 0.02;
+  } else {
+    vKi = 0.01;
+  }
+}
+
+void readWheelPosition() {
+  I2CHelper::responder.addFloat(yw / 360.0);
+  I2CHelper::responder.write(false);
 }
 
