@@ -1,5 +1,6 @@
 __author__ = 'tom'
 
+
 class Mechaduino():
     """
     Class to communicate with a modified mechaduino
@@ -13,4 +14,3 @@ class Mechaduino():
         """
 
         self.address = address
-
