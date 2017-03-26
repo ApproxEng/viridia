@@ -11,8 +11,8 @@
    of these defines.
 */
 //#define MOTOR_A
-//#define MOTOR_B
-#define MOTOR_C
+#define MOTOR_B
+//#define MOTOR_C
 
 #define firmware_version "0.1.3"    //firmware version
 #if defined(MOTOR_A)
