@@ -9,23 +9,27 @@ class TaskManager:
     Manages the task loop
     """
 
-    def __init__(self, chassis, joystick):
+    def __init__(self, chassis, joystick, i2c, motors, feather):
         self.chassis = chassis
         self.joystick = joystick
+        self.i2c = i2c
+        self.motors = motors
+        self.feather = feather
         self.home_task = None
 
     def _build_context(self):
         return TaskContext(chassis=self.chassis,
                            joystick=self.joystick,
-                           buttons_pressed=self.joystick.buttons.get_and_clear_button_press_history())
+                           buttons_pressed=self.joystick.buttons.get_and_clear_button_press_history(),
+                           i2c=self.i2c, feather=self.feather, motors=self.motors)
 
     def run(self, initial_task):
         """
         Start the task loop. Handles task switching and initialisation as well as any exceptions thrown within tasks.
 
         :param initial_task:
-            An instance of :class:`triangula.task.Task` to use as the first task. Typically this is a menu or startup
-            task of some kind.
+            An instance of :class:`approxeng.viridia.task.Task` to use as the first task. Typically this is a menu or 
+            startup task of some kind.
         """
         active_task = initial_task
         task_initialised = False
@@ -69,7 +73,7 @@ class TaskContext:
 
     """
 
-    def __init__(self, chassis, joystick, buttons_pressed):
+    def __init__(self, chassis, joystick, buttons_pressed, i2c, motors, feather):
         """
         Create a new task context
 
@@ -77,11 +81,20 @@ class TaskContext:
             An instance of :class:`approxeng.holochassis.HoloChassis` defining the motion dynamics for the robot.
         :param joystick:
             An instance of :class:`approxeng.input.dualshock4.DualShock4` which can be used to get the joystick axes.
+        :param buttons_pressed:
+            An instance of :class:`approxeng.input.ButtonPresses` containing the buttons pressed since the last tick
+            started
+        :param i2c:
+            An instance of :class:`approxeng.pi2arduino.I2CHelper` used to send and receive data to and from I2C 
+            peripherals
         """
         self.chassis = chassis
         self.joystick = joystick
         self.buttons_pressed = buttons_pressed
         self.timestamp = time.time()
+        self.i2c = i2c
+        self.motors = motors
+        self.feather = feather
 
     def pressed(self, sname):
         return self.buttons_pressed.was_pressed(sname)
@@ -115,8 +128,8 @@ class Task:
         available during construction.
 
         :param context:
-            An instance of :class:`approxeng.viridia.task.TaskContext` containing objects and properties which allow the task
-            to comprehend and act on its environment.
+            An instance of :class:`approxeng.viridia.task.TaskContext` containing objects and properties which allow 
+            the task to comprehend and act on its environment.
         """
         return None
 
@@ -127,12 +140,13 @@ class Task:
         requirement for timely processing.
 
         :param context:
-            An instance of :class:`approxeng.viridia.task.TaskContext` containing objects and properties which allow the task
-            to comprehend and act on its environment.
+            An instance of :class:`approxeng.viridia.task.TaskContext` containing objects and properties which allow 
+            the task to comprehend and act on its environment.
         :param int tick:
             A counter, incremented each time poll is called.
         :return:
-            Either None, to continue this task, or a subclass of :class:`approxeng.viridia.task.Task` to switch to that task.
+            Either None, to continue this task, or a subclass of :class:`approxeng.viridia.task.Task` to switch to 
+            that task.
         """
         return None
 
@@ -149,7 +163,7 @@ class ClearStateTask(Task):
         next task. Use this when switching to ensure we're not leaving the wheels running etc.
 
         :param following_task:
-            Another :class:`triangula.task.Task` which is immediately returned from the first poll operation.
+            Another :class:`approxeng.viridia.task.Task` which is immediately returned from the first poll operation.
         :return:
         """
         super(ClearStateTask, self).__init__(task_name='Clear state task')

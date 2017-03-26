@@ -2,16 +2,13 @@ from euclid import Vector2
 
 from approxeng.holochassis.chassis import rotate_vector, Motion, DeadReckoning
 from approxeng.holochassis.dynamics import RateLimit, MotionLimit
-from triangula.input import SixAxis
-from triangula.task import Task
-from triangula.util import IntervalCheck
+from approxeng.viridia import IntervalCheck
+from approxeng.viridia.task import Task
 
 
 class ManualMotionTask(Task):
     """
-    Class enabling manual control of the robot from the joystick. Uses dead-reckoning for bearing lock, we don't
-    use the IMU at all in this version of the class, it was proving problematic in real-world conditions and the
-    dead-reckoning logic is surprisingly accurate and stable.
+    Class enabling manual control of the robot from the joystick. Uses dead-reckoning for bearing lock.
     """
 
     ACCEL_TIME = 1.0
@@ -37,7 +34,7 @@ class ManualMotionTask(Task):
         # Maximum rotation speed in radians/2
         self.max_rot = context.chassis.get_max_rotation_speed()
         self._set_relative_motion(context)
-        self.dead_reckoning = DeadReckoning(chassis=context.chassis, counts_per_revolution=3310)
+        self.dead_reckoning = DeadReckoning(chassis=context.chassis, counts_per_revolution=1.0, max_count_value=None)
         self.motion_limit = MotionLimit(
             linear_acceleration_limit=context.chassis.get_max_translation_speed() / ManualMotionTask.ACCEL_TIME,
             angular_acceleration_limit=context.chassis.get_max_rotation_speed() / ManualMotionTask.ACCEL_TIME)
@@ -59,13 +56,13 @@ class ManualMotionTask(Task):
     def poll_task(self, context, tick):
 
         # Check joystick buttons to see if we need to change mode or reset anything
-        if context.button_pressed(SixAxis.BUTTON_TRIANGLE):
+        if context.pressed('triangle'):
             self._set_relative_motion(context)
-        elif context.button_pressed(SixAxis.BUTTON_SQUARE):
+        elif context.pressed('square'):
             self._set_absolute_motion(context)
-        elif context.button_pressed(SixAxis.BUTTON_CIRCLE):
+        elif context.pressed('circle'):
             self.dead_reckoning.reset()
-        elif context.button_pressed(SixAxis.BUTTON_CROSS):
+        elif context.pressed('cross'):
             self.limit_mode = (self.limit_mode + 1) % 3
 
         # Check to see whether the minimum interval between dead reckoning updates has passed
@@ -77,8 +74,8 @@ class ManualMotionTask(Task):
         # as possible when the stick is pushed fully forwards
 
         translate = Vector2(
-            context.joystick.axes[0].corrected_value(),
-            context.joystick.axes[1].corrected_value()) * self.max_trn
+            context.joystick.get_axis_value('lx'),
+            context.joystick.get_axis_value('ly')) * self.max_trn
         ':type : euclid.Vector2'
 
         # If we're in absolute mode, rotate the translation vector appropriately
@@ -90,12 +87,12 @@ class ManualMotionTask(Task):
         # scaling it to our maximum rotational speed. When standing still this means
         # that full right on the right hand stick corresponds to maximum speed
         # clockwise rotation.
-        rotate = context.joystick.axes[2].corrected_value() * self.max_rot
+        rotate = context.joystick.get_axis_value('rx') * self.max_rot
 
         # Given the translation vector and rotation, use the chassis object to calculate
         # the speeds required in revolutions per second for each wheel. We'll scale these by the
         # wheel maximum speeds to get a range of -1.0 to 1.0
-        # This is a :class:`triangula.chassis.WheelSpeeds` containing the speeds and any
+        # This is a :class:`approxeng.holochassis.chassis.WheelSpeeds` containing the speeds and any
         # scaling applied to bring the requested velocity within the range the chassis can
         # actually perform.
         motion = Motion(translation=translate, rotation=rotate)
@@ -104,11 +101,8 @@ class ManualMotionTask(Task):
         wheel_speeds = context.chassis.get_wheel_speeds(motion=motion)
         speeds = wheel_speeds.speeds
 
-        # Send desired motor speed values over the I2C bus to the Arduino, which will
-        # then send the appropriate messages to the Syren10 controllers over its serial
-        # line as well as lighting up a neopixel ring to provide additional feedback
-        # and bling.
+        # Send desired motor speed values over the I2C bus to the motors
         power = [speeds[i] / context.chassis.wheels[i].max_speed for i in range(0, 3)]
         if self.limit_mode == 1:
-            power = self.rate_limit.limit_and_return(power)
-        context.arduino.set_motor_power(power[0], power[1], power[2])
+            speeds = self.rate_limit.limit_and_return(speeds)
+        context.motors.set_speeds(speeds)
