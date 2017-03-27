@@ -1,4 +1,4 @@
-#!/home/pi/git/venv/bin/python
+#!/home/pi/venv/bin/python
 """
 Viridia top level service script
 """
