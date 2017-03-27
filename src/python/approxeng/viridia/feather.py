@@ -17,3 +17,7 @@ class Feather:
             I2C address of the feather, defaults to 0x31
         """
         self.i2c = i2c
+        self.i2c_address = i2c_address
+
+    def set_ring_hue(self, hue):
+        self.i2c.send(self.i2c_address, 1, hue, 30)

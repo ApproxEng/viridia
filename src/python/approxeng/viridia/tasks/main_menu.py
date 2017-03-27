@@ -15,7 +15,8 @@ class MenuTask(Task):
         self.selected_task_index = 0
 
     def init_task(self, context):
-	context.motors.disable()
+        context.feather.set_ring_hue(100)
+        context.motors.disable()
         pass
 
     def _increment_index(self, delta):
