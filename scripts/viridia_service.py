@@ -82,6 +82,11 @@ camera.framerate = 32
 # Sleep to give the camera a chance to startup properly
 sleep(0.1)
 
+# Motors
+motors = Motors(i2c=i2c)
+
+print motors.read_angles()
+
 while 1:
     try:
         with ControllerResource(controller=DualShock4(), device_name=CONTROLLER_NAME) as joystick:
@@ -97,7 +102,7 @@ while 1:
                 # I2CHelper instance
                 i2c=i2c,
                 # Motors instance used to control the motors and read wheel positions
-                motors=Motors(i2c=i2c),
+                motors=motors,
                 # Feather, used to control lights and kicker solenoid
                 feather=Feather(i2c=i2c),
                 # Reference to PiCamera object

@@ -59,5 +59,5 @@ class Motors:
         :return: 
             A sequence of floating point values, specified in overall revolutions since initialisation
         """
-        return [self.i2c.read(self.base_address + address_offset, 'f')
+        return [self.i2c.read(self.base_address + address_offset, 'f')[0]
                 for address_offset in range(0, self.motor_count)]

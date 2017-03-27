@@ -40,6 +40,8 @@ class ManualMotionTask(Task):
             angular_acceleration_limit=context.chassis.get_max_rotation_speed() / ManualMotionTask.ACCEL_TIME)
         self.rate_limit = RateLimit(limit_function=RateLimit.fixed_rate_limit_function(1 / ManualMotionTask.ACCEL_TIME))
         self.limit_mode = 0
+	context.display.show('Maximum linear speed = {}, rotational = {}'.format(context.chassis.get_max_translation_speed(), context.chassis.get_max_rotation_speed()), 'foo')
+	context.motors.enable()
 
     def _set_absolute_motion(self, context):
         """
@@ -111,6 +113,7 @@ class ManualMotionTask(Task):
         motion = Motion(translation=translate, rotation=rotate)
         if self.limit_mode == 1:
             motion = self.motion_limit.limit_and_return(motion)
-
+	speeds = [speed * 60 for speed in context.chassis.get_wheel_speeds(motion=motion).speeds]
+	print speeds
         # Send desired motor speed values over the I2C bus to the motors
-        context.motors.set_speeds(context.chassis.get_wheel_speeds(motion=motion).speeds)
+        context.motors.set_speeds(speeds)
