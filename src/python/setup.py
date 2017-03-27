@@ -17,7 +17,7 @@ setup(
     author_email='tomoinn@gmail.com',
     license='ASL2.0',
     packages=['approxeng.viridia'],
-    install_requires=[],
+    install_requires=['picamera[array]'],
     include_package_data=True,
     test_suite='nose.collector',
     tests_require=['nose'],

@@ -1,10 +1,7 @@
 from time import sleep
 
 from approxeng.viridia.task import ClearStateTask, Task
-from triangula.tasks.compass_test import CompassTestTask
-from triangula.tasks.manual_control import ManualMotionTask
-from triangula.tasks.network_info import NetworkInfoTask
-from triangula.tasks.patrol import SimplePatrolExample, TrianglePatrol
+from approxeng.viridia.tasks.manual_control import ManualMotionTask
 
 
 class MenuTask(Task):
@@ -14,7 +11,7 @@ class MenuTask(Task):
 
     def __init__(self):
         super(MenuTask, self).__init__(task_name='Menu')
-        self.tasks = [ManualMotionTask(), NetworkInfoTask(), CompassTestTask(), TrianglePatrol(), SimplePatrolExample()]
+        self.tasks = [ManualMotionTask()]
         self.selected_task_index = 0
 
     def init_task(self, context):
@@ -26,12 +23,12 @@ class MenuTask(Task):
         self.selected_task_index %= len(self.tasks)
 
     def poll_task(self, context, tick):
-        if context.joystick.BUTTON_D_LEFT in context.buttons_pressed:
+        if context.pressed('dleft'):
             self._increment_index(-1)
-        elif context.joystick.BUTTON_D_RIGHT in context.buttons_pressed:
+        elif context.pressed('dright'):
             self._increment_index(1)
-        elif context.joystick.BUTTON_CROSS in context.buttons_pressed:
+        elif context.pressed('cross'):
             return ClearStateTask(following_task=self.tasks[self.selected_task_index])
-        context.lcd.set_text(row1='Task {} of {}'.format(self.selected_task_index + 1, len(self.tasks)),
-                             row2=self.tasks[self.selected_task_index].task_name)
+        context.display.show('Task {} of {}'.format(self.selected_task_index + 1, len(self.tasks)),
+                             self.tasks[self.selected_task_index].task_name)
         sleep(0.1)

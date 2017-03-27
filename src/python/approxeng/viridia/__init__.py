@@ -7,17 +7,6 @@ from time import time, sleep as time_sleep
 __path__ = extend_path(__path__, __name__)
 
 
-def show_message(message1, message2=None):
-    """
-    Quick method to print a message, in cases where we have a display this should use it, otherwise
-    it should just print to the console.
-    """
-    if message2 is not None:
-        print '{}\n{}'.format(message1, message2)
-    else:
-        print message1
-
-
 class IntervalCheck:
     """
     Utility class which can be used to run code within a polling loop at most once per n seconds. Set up an instance

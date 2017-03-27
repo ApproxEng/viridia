@@ -10,8 +10,8 @@
    top, B the next clockwise from that, and C the other one. Only specify one
    of these defines.
 */
-//#define MOTOR_A
-#define MOTOR_B
+#define MOTOR_A
+//#define MOTOR_B
 //#define MOTOR_C
 
 #define firmware_version "0.1.3"    //firmware version

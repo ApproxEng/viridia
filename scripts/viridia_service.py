@@ -10,11 +10,14 @@ from signal import signal, SIGINT, SIGTERM
 from sys import exit
 from time import sleep
 
+from picamera import PiCamera
+from picamera.array import PiRGBArray
+
 from approxeng.holochassis.chassis import get_regular_triangular_chassis
 from approxeng.input.asyncorebinder import ControllerResource
 from approxeng.input.dualshock4 import DualShock4, CONTROLLER_NAME
 from approxeng.pi2arduino import I2CHelper
-from approxeng.viridia import show_message
+from approxeng.viridia.display import PrintDisplay
 from approxeng.viridia.feather import Feather
 from approxeng.viridia.motors import Motors
 from approxeng.viridia.task import TaskManager
@@ -50,7 +53,7 @@ def get_shutdown_handler(message=None):
     """
 
     def handler(signum, frame):
-        show_message('Service shutdown', message)
+        display.show('Service shutdown', message)
         exit(0)
 
     return handler
@@ -67,10 +70,22 @@ i2c = I2CHelper()
 # Become 'pi'
 drop_privileges(uid_name='pi', gid_name='pi')
 
+# Set up a display class, either interfacing to an actual display or printing to the console
+display = PrintDisplay()
+
+# Set up the camera
+camera_width = 640
+camera_height = 480
+camera = PiCamera()
+camera.resolution = (camera_width, camera_height)
+camera.framerate = 32
+# Sleep to give the camera a chance to startup properly
+sleep(0.1)
+
 while 1:
     try:
         with ControllerResource(controller=DualShock4(), device_name=CONTROLLER_NAME) as joystick:
-            show_message("Found dualshock4 at {}".format(joystick))
+            display.show("Found dualshock4 at {}".format(joystick))
             task_manager = TaskManager(
                 # Chassis, configure for robot dimensions
                 chassis=get_regular_triangular_chassis(
@@ -84,8 +99,15 @@ while 1:
                 # Motors instance used to control the motors and read wheel positions
                 motors=Motors(i2c=i2c),
                 # Feather, used to control lights and kicker solenoid
-                feather=Feather(i2c=i2c))
+                feather=Feather(i2c=i2c),
+                # Reference to PiCamera object
+                camera=camera,
+                # ...and the raw buffer used to read camera data
+                raw_capture=PiRGBArray(camera, size=(camera_width, camera_height)),
+                # Display, used to print messages either to hardware or to stdout
+                display=display
+            )
             task_manager.run(initial_task=MenuTask())
     except IOError:
-        show_message("Waiting for joystick")
+        display.show("Waiting for joystick")
         sleep(0.3)

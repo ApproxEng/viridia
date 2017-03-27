@@ -46,12 +46,24 @@ class ManualMotionTask(Task):
         Lock motion to be compass relative, zero point (forwards) is the current bearing
         """
         self.bearing_zero = self.dead_reckoning.pose.orientation
+        context.display.show("Absolute motion engaged")
 
     def _set_relative_motion(self, context):
         """
         Set motion to be relative to the robot's reference frame
         """
         self.bearing_zero = None
+        context.display.show("Relative motion engaged")
+
+    def _toggle_limit_mode(self, context):
+        """
+        Toggle the motion limit mode
+        """
+        self.limit_mode = (self.limit_mode + 1) % 3
+        if self.limit_mode == 0:
+            context.display.show("Motion limit disabled")
+        elif self.limit_mode == 1:
+            context.display.show("Motion limit enabled")
 
     def poll_task(self, context, tick):
 
@@ -62,8 +74,9 @@ class ManualMotionTask(Task):
             self._set_absolute_motion(context)
         elif context.pressed('circle'):
             self.dead_reckoning.reset()
+            context.display.show("Absolute bearing reset")
         elif context.pressed('cross'):
-            self.limit_mode = (self.limit_mode + 1) % 3
+            self._toggle_limit_mode(context)
 
         # Check to see whether the minimum interval between dead reckoning updates has passed
         if self.pose_update_interval.should_run():
@@ -96,13 +109,8 @@ class ManualMotionTask(Task):
         # scaling applied to bring the requested velocity within the range the chassis can
         # actually perform.
         motion = Motion(translation=translate, rotation=rotate)
-        if self.limit_mode == 2:
-            motion = self.motion_limit.limit_and_return(motion)
-        wheel_speeds = context.chassis.get_wheel_speeds(motion=motion)
-        speeds = wheel_speeds.speeds
-
-        # Send desired motor speed values over the I2C bus to the motors
-        power = [speeds[i] / context.chassis.wheels[i].max_speed for i in range(0, 3)]
         if self.limit_mode == 1:
-            speeds = self.rate_limit.limit_and_return(speeds)
-        context.motors.set_speeds(speeds)
+            motion = self.motion_limit.limit_and_return(motion)
+        
+        # Send desired motor speed values over the I2C bus to the motors
+        context.motors.set_speeds(context.chassis.get_wheel_speeds(motion=motion).speeds)
