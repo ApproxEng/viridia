@@ -80,7 +80,7 @@ class ManualMotionTask(Task):
 
         # Check to see whether the minimum interval between dead reckoning updates has passed
         if self.pose_update_interval.should_run():
-            self.dead_reckoning.update_from_counts(context.motors.get_positions())
+            self.dead_reckoning.update_from_counts(context.motors.read_angles())
 
         # Get a vector from the left hand analogue stick and scale it up to our
         # maximum translation speed, this will mean we go as fast directly forward
@@ -111,6 +111,6 @@ class ManualMotionTask(Task):
         motion = Motion(translation=translate, rotation=rotate)
         if self.limit_mode == 1:
             motion = self.motion_limit.limit_and_return(motion)
-        
+
         # Send desired motor speed values over the I2C bus to the motors
         context.motors.set_speeds(context.chassis.get_wheel_speeds(motion=motion).speeds)
