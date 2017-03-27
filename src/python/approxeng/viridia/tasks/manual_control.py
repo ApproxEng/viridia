@@ -116,7 +116,7 @@ class ManualMotionTask(Task):
         motion = Motion(translation=translate, rotation=rotate)
         if self.limit_mode == 1:
             motion = self.motion_limit.limit_and_return(motion)
-        speeds = [speed * 60 for speed in context.chassis.get_wheel_speeds(motion=motion).speeds]
+        speeds = [speed * -60 for speed in context.chassis.get_wheel_speeds(motion=motion).speeds]
         print speeds
         # Send desired motor speed values over the I2C bus to the motors
         context.motors.set_speeds(speeds)
