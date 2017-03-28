@@ -1,6 +1,7 @@
 import time
 import traceback
 from abc import ABCMeta, abstractmethod
+from approxeng.viridia.drive import Drive
 
 
 class TaskManager:
@@ -24,7 +25,8 @@ class TaskManager:
                            joystick=self.joystick,
                            buttons_pressed=self.joystick.buttons.get_and_clear_button_press_history(),
                            i2c=self.i2c, feather=self.feather, camera=self.camera, raw_capture=self.raw_capture,
-                           motors=self.motors, display=self.display)
+                           motors=self.motors, display=self.display,
+                           drive=Drive(chassis=self.chassis, motors=self.motors))
 
     def run(self, initial_task):
         """
@@ -76,7 +78,7 @@ class TaskContext:
 
     """
 
-    def __init__(self, chassis, joystick, buttons_pressed, i2c, motors, feather, camera, raw_capture, display):
+    def __init__(self, chassis, joystick, buttons_pressed, i2c, motors, feather, camera, raw_capture, display, drive):
         """
         Create a new task context
 
@@ -104,6 +106,8 @@ class TaskContext:
         :param display:
             An instance of :class:`approxeng.viridia.display.Display` used to show textual messages to the user either
             by displaying them on a hardware module or by printing to stdout
+        :param drive:
+            An instance of :class:`approxeng.viridia.drive.Drive` providing high level motion functionality
         """
         self.chassis = chassis
         self.joystick = joystick
@@ -115,6 +119,7 @@ class TaskContext:
         self.camera = camera
         self.raw_capture = raw_capture
         self.display = display
+        self.drive = drive
 
     def pressed(self, sname):
         return self.buttons_pressed.was_pressed(sname)

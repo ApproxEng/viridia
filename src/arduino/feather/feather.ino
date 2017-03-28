@@ -28,9 +28,9 @@ byte hue = 0; // Hue, for modes which specify a hue
 byte hue_variation = 30; // Hue variation, where applicable
 byte mode = 0; // Mode, defines the kind of light show displayed
 float direction = 0.0; // For directional displays, this is the angle in radians
-Interval ledUpdate(20); // Update for animations
+Interval ledUpdate(30); // Update for animations
 CRGB leds[NUM_LEDS]; // The LEDs
-Adafruit_NeoPixel strip;
+Adafruit_NeoPixel strip(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 /*
    Setup - starts up the I2CHelper and Serial connections
@@ -41,8 +41,7 @@ Adafruit_NeoPixel strip;
 void setup() {
   //FastLED.addLeds<NEOPIXEL, LED_PIN>(leds, NUM_LEDS);
   //FastLED.setBrightness(100);
-  strip = Adafruit_NeoPixel(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
-  strip.setBrightness(100);
+  //strip.setBrightness(100);
   strip.begin();
   I2CHelper::begin(ADDRESS);
 }
@@ -60,8 +59,8 @@ void loop() {
   if (I2CHelper::reader.hasNewData()) {
     if (I2CHelper::reader.checksumValid()) {
       byte command = I2CHelper::reader.getByte();
-      Serial.print(F("Command received: "));
-      Serial.println(command, DEC);
+      //Serial.print(F("Command received: "));
+      //Serial.println(command, DEC);
       switch (command) {
         case 0:
           mode = I2CHelper::reader.getByte();
@@ -79,10 +78,8 @@ void loop() {
         default:
           break;
       }
-    }
-    else {
-      I2CHelper::reader.start();
-    }
+    }    
+    //I2CHelper::reader.start();
   }
   // Only update the display every 20 milliseconds
   if (ledUpdate.shouldRun()) {
@@ -101,7 +98,7 @@ void loop() {
           leds[i] = leds[i + 1];
         }
         leds[NUM_LEDS - 1] = firstLED;
-        leds[random(NUM_LEDS)] = CHSV(hue + random(-hue_variation, hue_variation), 255, 255);
+        leds[random(NUM_LEDS)].setHSV(hue + random(-hue_variation, hue_variation), 255, 255);
         break;
       case 1:
         /*
@@ -111,9 +108,10 @@ void loop() {
         for (int i = 0; i < NUM_LEDS; i++) {
           leds[i].fadeToBlackBy(50);
         }
-        int centreLED = (int)((direction / 2.0f * PI) * ((float)NUM_LEDS));
+        int centreLED = (int)((direction / (2.0f * PI)) * ((float)NUM_LEDS));
         for (int i = -4; i <= 4; i++) {
-          leds[(centreLED + i) % NUM_LEDS] = CHSV(hue, 255, 255);
+          leds[(centreLED + i + NUM_LEDS) % NUM_LEDS].setHSV(hue, 255, 255);
+          //Serial.println((centreLED + i + NUM_LEDS) % NUM_LEDS);
         }
         break;
     }
