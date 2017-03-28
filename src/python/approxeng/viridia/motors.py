@@ -21,7 +21,7 @@ class Motors:
         """
         self.i2c = i2c
         self.base_address = base_address
-        self.motor_count = 3
+        self.motor_count = motor_count
 
     def set_speeds(self, speeds):
         """
@@ -34,13 +34,26 @@ class Motors:
             # Command 0 sets velocity mode and setpoint
             self.i2c.send(self.base_address + address_offset, 0, float(speed))
 
+    def enable_motor(self, motor):
+        """
+        Enable a single motor, motors are specified by offset from base address, so in [0,1,2] for our robot
+        """
+        # Command 1 enables closed loop control
+        self.i2c.send(self.base_address + motor, 1)
+
     def enable(self):
         """
         Enable closed loop control on all motors, this must be called before you'll see any motion.
         """
-        for address_offset in range(0, self.motor_count):
-            # Command 1 enables closed loop control
-            self.i2c.send(self.base_address + address_offset, 1)
+        for motor in range(0, self.motor_count):
+            self.enable_motor(motor)
+
+    def disable_motor(self, motor):
+        """
+        Disable a single motor, motors are specified by offset from base address, so in [0,1,2] for our robot
+        """
+        # Command 2 disables closed loop control
+        self.i2c.send(self.base_address + motor, 2)
 
     def disable(self):
         """
@@ -48,9 +61,8 @@ class Motors:
         holding mode. Motor power is still active and will passively resist disturbance, but no active
         correction will be applied.
         """
-        for address_offset in range(0, self.motor_count):
-            # Command 2 disables closed loop control
-            self.i2c.send(self.base_address + address_offset, 2)
+        for motor in range(0, self.motor_count):
+            self.disable_motor(motor)
 
     def read_angles(self):
         """

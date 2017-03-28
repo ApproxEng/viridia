@@ -34,7 +34,7 @@ class ManualMotionTask(Task):
         # Maximum rotation speed in radians/2
         self.max_rot = context.chassis.get_max_rotation_speed()
         self._set_relative_motion(context)
-        self.dead_reckoning = DeadReckoning(chassis=context.chassis, counts_per_revolution=1.0, max_count_value=None)
+        self.dead_reckoning = DeadReckoning(chassis=context.chassis, counts_per_revolution=1.0, max_count_value=0)
         self.motion_limit = MotionLimit(
             linear_acceleration_limit=context.chassis.get_max_translation_speed() / ManualMotionTask.ACCEL_TIME,
             angular_acceleration_limit=context.chassis.get_max_rotation_speed() / ManualMotionTask.ACCEL_TIME)
@@ -85,7 +85,7 @@ class ManualMotionTask(Task):
 
         # Check to see whether the minimum interval between dead reckoning updates has passed
         if self.pose_update_interval.should_run():
-            self.dead_reckoning.update_from_counts(context.motors.read_angles())
+            self.dead_reckoning.update_from_revolutions(context.motors.read_angles())
 
         # Get a vector from the left hand analogue stick and scale it up to our
         # maximum translation speed, this will mean we go as fast directly forward

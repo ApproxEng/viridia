@@ -54,6 +54,7 @@ def get_shutdown_handler(message=None):
 
     def handler(signum, frame):
         display.show('Service shutdown', message)
+        motors.disable()
         exit(0)
 
     return handler
