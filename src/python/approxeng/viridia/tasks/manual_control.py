@@ -46,6 +46,7 @@ class ManualMotionTask(Task):
                                                                 context.chassis.get_max_rotation_speed()), 'foo')
         context.motors.enable()
         self.absolute_motion = False
+        context.feather.set_lighting_mode(1)
         context.feather.set_ring_hue(160)
 
     def _set_absolute_motion(self, context):
@@ -54,6 +55,7 @@ class ManualMotionTask(Task):
         """
         self.front = 0.0
         self.absolute_motion = True
+        context.feather.set_ring_hue(240)
         context.display.show("Absolute motion engaged")
 
     def _set_relative_motion(self, context):
@@ -62,6 +64,7 @@ class ManualMotionTask(Task):
         """
         self.front = 0.0
         self.absolute_motion = False
+        context.feather.set_ring_hue(160)
         context.display.show("Relative motion engaged")
 
     def _toggle_limit_mode(self, context):
@@ -90,7 +93,6 @@ class ManualMotionTask(Task):
         # Check to see whether the minimum interval between dead reckoning updates has passed
         if self.pose_update_interval.should_run():
             self.dead_reckoning.update_from_revolutions(context.motors.read_angles())
-            context.feather.set_lighting_mode(1)
 
         # Get a vector from the left hand analogue stick and scale it up to our
         # maximum translation speed, this will mean we go as fast directly forward
@@ -125,6 +127,6 @@ class ManualMotionTask(Task):
         if self.limit_mode == 1:
             motion = self.motion_limit.limit_and_return(motion)
         speeds = [speed * -60 for speed in context.chassis.get_wheel_speeds(motion=motion).speeds]
-        print speeds
+        print self.dead_reckoning.pose
         # Send desired motor speed values over the I2C bus to the motors
         context.motors.set_speeds(speeds)

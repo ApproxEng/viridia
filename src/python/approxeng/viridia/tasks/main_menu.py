@@ -15,6 +15,7 @@ class MenuTask(Task):
         self.selected_task_index = 0
 
     def init_task(self, context):
+        context.feather.set_lighting_mode(0)
         context.feather.set_ring_hue(100)
         context.motors.disable()
         pass

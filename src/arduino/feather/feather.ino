@@ -1,10 +1,11 @@
 /*
-   Firmware running on the ATMega328 based Feather on Viridia. This includes the neopixel ring and the 
+   Firmware running on the ATMega328 based Feather on Viridia. This includes the neopixel ring and the
    solenoid kicker control.
 */
 
 #include <I2CHelper.h>
 #include <FastLED.h>
+#include <Adafruit_NeoPixel.h>
 #include "Interval.h"
 
 /*
@@ -29,6 +30,7 @@ byte mode = 0; // Mode, defines the kind of light show displayed
 float direction = 0.0; // For directional displays, this is the angle in radians
 Interval ledUpdate(20); // Update for animations
 CRGB leds[NUM_LEDS]; // The LEDs
+Adafruit_NeoPixel strip;
 
 /*
    Setup - starts up the I2CHelper and Serial connections
@@ -37,8 +39,11 @@ CRGB leds[NUM_LEDS]; // The LEDs
    until you connect the monitor.
 */
 void setup() {
-  FastLED.addLeds<NEOPIXEL, LED_PIN>(leds, NUM_LEDS);
-  FastLED.setBrightness(100);
+  //FastLED.addLeds<NEOPIXEL, LED_PIN>(leds, NUM_LEDS);
+  //FastLED.setBrightness(100);
+  strip = Adafruit_NeoPixel(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
+  strip.setBrightness(100);
+  strip.begin();
   I2CHelper::begin(ADDRESS);
 }
 
@@ -66,7 +71,7 @@ void loop() {
           hue_variation = I2CHelper::reader.getByte();
           break;
         case 2:
-          FastLED.setBrightness(I2CHelper::reader.getByte());
+          strip.setBrightness(I2CHelper::reader.getByte());
           break;
         case 3:
           direction = I2CHelper::reader.getFloat();
@@ -110,8 +115,17 @@ void loop() {
         for (int i = -4; i <= 4; i++) {
           leds[(centreLED + i) % NUM_LEDS] = CHSV(hue, 255, 255);
         }
+        break;
     }
-    FastLED.show();
+    //FastLED.show();
+    show();
   }
+}
+
+void show() {
+  for (int i = 0; i < NUM_LEDS; i++) {
+    strip.setPixelColor(i, leds[i].red, leds[i].green, leds[i].blue);
+  }
+  strip.show();
 }
 
