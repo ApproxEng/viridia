@@ -1,7 +1,7 @@
 import time
 import traceback
 from abc import ABCMeta, abstractmethod
-from approxeng.viridia.drive import Drive
+from approxeng.viridia.drive import ViridiaDrive
 
 
 class TaskManager:
@@ -26,7 +26,7 @@ class TaskManager:
                            buttons_pressed=self.joystick.buttons.get_and_clear_button_press_history(),
                            i2c=self.i2c, feather=self.feather, camera=self.camera, raw_capture=self.raw_capture,
                            motors=self.motors, display=self.display,
-                           drive=Drive(chassis=self.chassis, motors=self.motors))
+                           drive=ViridiaDrive(chassis=self.chassis, motors=self.motors))
 
     def run(self, initial_task):
         """
