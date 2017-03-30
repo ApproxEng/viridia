@@ -18,7 +18,7 @@ class LinearCalibrationTask(Task):
 
     def init_task(self, context):
         self.motion = None
-        context.motors.enable()
+        context.drive.enable_drive()
         pass
 
     def poll_task(self, context, tick):

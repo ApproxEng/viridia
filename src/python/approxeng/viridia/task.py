@@ -18,6 +18,7 @@ class TaskManager:
         self.camera = camera
         self.raw_capture = raw_capture
         self.display = display
+        self.drive = ViridiaDrive(chassis=self.chassis, motors=self.motors)
         self.home_task = None
 
     def _build_context(self):
@@ -26,7 +27,7 @@ class TaskManager:
                            buttons_pressed=self.joystick.buttons.get_and_clear_button_press_history(),
                            i2c=self.i2c, feather=self.feather, camera=self.camera, raw_capture=self.raw_capture,
                            motors=self.motors, display=self.display,
-                           drive=ViridiaDrive(chassis=self.chassis, motors=self.motors))
+                           drive=self.drive)
 
     def run(self, initial_task):
         """
