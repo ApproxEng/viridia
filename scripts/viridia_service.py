@@ -96,7 +96,7 @@ while 1:
                 # Chassis, configure for robot dimensions
                 chassis=get_regular_triangular_chassis(
                     wheel_distance=160,
-                    wheel_radius=60,
+                    wheel_radius=30,
                     max_rotations_per_second=500 / 60),
                 # Joystick bound by resource context
                 joystick=joystick,
