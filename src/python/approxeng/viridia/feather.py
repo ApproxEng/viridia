@@ -1,6 +1,7 @@
 __author__ = 'tom'
 
 import RPi.GPIO as gpio
+from time import sleep
 
 class Feather:
     """
@@ -59,5 +60,7 @@ class Feather:
 
     def _send(self, *sequence):
         gpio.output(self.led_disable_pin, 1)
+        sleep(0.01)
         self.i2c.send(self.i2c_address, *sequence)
+        sleep(0.01)
         gpio.output(self.led_disable_pin, 0)
