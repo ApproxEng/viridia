@@ -2,7 +2,7 @@ from approxeng.viridia.task import Task
 from approxeng.holochassis.chassis import Motion
 from euclid import Vector2
 from time import time
-
+from math import pi
 
 class LinearCalibrationTask(Task):
     """
@@ -19,7 +19,6 @@ class LinearCalibrationTask(Task):
     def init_task(self, context):
         self.motion = None
         context.drive.enable_drive()
-        pass
 
     def poll_task(self, context, tick):
         if self.motion is None:
@@ -40,9 +39,19 @@ class AngularCalibrationTask(Task):
 
     def __init__(self):
         super(AngularCalibrationTask, self).__init__(task_name='Angular calibration')
+        self.motion = None
+        self.start_time = 0
 
     def init_task(self, context):
-        pass
+        self.motion = None
+        context.drive.enable_drive()
 
     def poll_task(self, context, tick):
-        pass
+        if self.motion is None:
+            self.motion = Motion(Vector2(0,0),pi/2)
+            self.start_time = time()
+        elif time() - self.start_time > 4:
+            self.motion = Motion(Vector2(0,0),0)
+            print context.drive.dead_reckoning.pose
+        context.drive.set_motion(self.motion)
+        context.drive.update_dead_reckoning()

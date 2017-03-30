@@ -12,7 +12,7 @@ class MenuTask(Task):
 
     def __init__(self):
         super(MenuTask, self).__init__(task_name='Menu')
-        self.tasks = [ManualMotionTask(), LinearCalibrationTask()]
+        self.tasks = [ManualMotionTask(), LinearCalibrationTask(), AngularCalibrationTask()]
         self.selected_task_index = 0
 
     def init_task(self, context):
