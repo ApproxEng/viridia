@@ -21,7 +21,7 @@ class ViridiaDrive(Drive):
         """
         Enable the motors. This will also set the motor speeds to zero first to avoid unpleasant surprises.
         """
-        self.motors.set_speeds(0.0, 0.0, 0.0)
+        self.motors.set_speeds([0.0, 0.0, 0.0])
         self.motors.enable()
 
     def disable_drive(self):
