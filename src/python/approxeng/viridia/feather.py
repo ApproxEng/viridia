@@ -47,7 +47,7 @@ class Feather:
             0 - Show semi-random rotating pattern
             1 - Show direction bar
         """
-        self._send(0, mode)
+        self._send(4, mode)
 
     def set_direction(self, radians):
         """

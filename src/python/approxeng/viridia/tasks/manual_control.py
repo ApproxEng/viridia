@@ -107,9 +107,12 @@ class ManualMotionTask(Task):
         if self.absolute_motion:
             translate = rotate_vector(translate,
                                       self.front - self.dead_reckoning.pose.orientation)
-            context.feather.set_direction(self.front - self.dead_reckoning.pose.orientation)
-        else:
-            context.feather.set_direction(self.front)
+
+        if self.pose_display_interval.should_run():
+            if self.absolute_motion:
+                context.feather.set_direction(self.front - self.dead_reckoning.pose.orientation)
+            else:
+                context.feather.set_direction(self.front)
 
         # Get the rotation in radians per second from the right hand stick's X axis,
         # scaling it to our maximum rotational speed. When standing still this means

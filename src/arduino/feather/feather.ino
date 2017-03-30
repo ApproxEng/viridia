@@ -15,9 +15,9 @@
    LED_PIN is the hardware pin used to send data to the neopixel strip.
 */
 #define ADDRESS 0x31
-#define NUM_LEDS 64
-#define LED_PIN 5
-#define DISABLE_PIN 11
+#define NUM_LEDS 60
+#define LED_PIN 9
+#define DISABLE_PIN 5
 
 /*
    Volatile state, the hue and hue_variation are used to configure the light
@@ -40,6 +40,7 @@ CRGB leds[NUM_LEDS]; // The LEDs
 void setup() {
   FastLED.addLeds<NEOPIXEL, LED_PIN>(leds, NUM_LEDS);
   FastLED.setBrightness(100);
+  FastLED.setDither(0);
   I2CHelper::begin(ADDRESS);
 }
 
@@ -56,10 +57,10 @@ void loop() {
   if (I2CHelper::reader.hasNewData()) {
     if (I2CHelper::reader.checksumValid()) {
       byte command = I2CHelper::reader.getByte();
-      //Serial.print(F("Command received: "));
-      //Serial.println(command, DEC);
+      Serial.print(F("Command received: "));
+      Serial.println(command, DEC);
       switch (command) {
-        case 0:
+        case 4:
           mode = I2CHelper::reader.getByte();
           break;
         case 1:
@@ -68,6 +69,7 @@ void loop() {
           break;
         case 2:
           FastLED.setBrightness(I2CHelper::reader.getByte());
+          FastLED.setDither(0);
           break;
         case 3:
           direction = I2CHelper::reader.getFloat();
@@ -76,7 +78,10 @@ void loop() {
           break;
       }
     }
-    //I2CHelper::reader.start();
+    else {
+      Serial.print("Checksum failed");
+      I2CHelper::reader.start();
+    }
   }
   // Only update the display every 20 milliseconds
   if (ledUpdate.shouldRun()) {
@@ -108,8 +113,10 @@ void loop() {
         int centreLED = (int)((direction / (2.0f * PI)) * ((float)NUM_LEDS));
         for (int i = -4; i <= 4; i++) {
           leds[(centreLED + i + NUM_LEDS) % NUM_LEDS].setHSV(hue, 255, 255);
-          //Serial.println((centreLED + i + NUM_LEDS) % NUM_LEDS);
+          Serial.print((centreLED + i + NUM_LEDS) % NUM_LEDS);
+          Serial.print(F(","));
         }
+        Serial.println("");
         break;
     }
     show();
@@ -117,8 +124,8 @@ void loop() {
 }
 
 void show() {
-  if (digitalRead(DISABLE_PIN) == HIGH)
-    return;
-  FastLED.show(); 
+  //if (digitalRead(DISABLE_PIN) == HIGH)
+  //  return;
+  FastLED.show();
 }
 
