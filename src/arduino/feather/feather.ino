@@ -57,8 +57,8 @@ void loop() {
   if (I2CHelper::reader.hasNewData()) {
     if (I2CHelper::reader.checksumValid()) {
       byte command = I2CHelper::reader.getByte();
-      Serial.print(F("Command received: "));
-      Serial.println(command, DEC);
+      //Serial.print(F("Command received: "));
+      //Serial.println(command, DEC);
       switch (command) {
         case 4:
           mode = I2CHelper::reader.getByte();
@@ -79,7 +79,7 @@ void loop() {
       }
     }
     else {
-      Serial.print("Checksum failed");
+      //Serial.print("Checksum failed");
       I2CHelper::reader.start();
     }
   }
@@ -110,13 +110,13 @@ void loop() {
         for (int i = 0; i < NUM_LEDS; i++) {
           leds[i].fadeToBlackBy(50);
         }
-        int centreLED = (int)((direction / (2.0f * PI)) * ((float)NUM_LEDS));
+        int centreLED = (int)((direction / (2.0f * PI)) * ((float)NUM_LEDS))+5;
         for (int i = -4; i <= 4; i++) {
           leds[(centreLED + i + NUM_LEDS) % NUM_LEDS].setHSV(hue, 255, 255);
-          Serial.print((centreLED + i + NUM_LEDS) % NUM_LEDS);
-          Serial.print(F(","));
+          //Serial.print((centreLED + i + NUM_LEDS) % NUM_LEDS);
+          //Serial.print(F(","));
         }
-        Serial.println("");
+        //Serial.println("");
         break;
     }
     show();

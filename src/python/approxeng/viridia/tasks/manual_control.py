@@ -20,7 +20,7 @@ class ManualMotionTask(Task):
         self.max_trn = 0
         self.max_rot = 0
         self.dead_reckoning = None
-        self.pose_display_interval = IntervalCheck(interval=0.2)
+        self.pose_display_interval = IntervalCheck(interval=0.1)
         self.pose_update_interval = IntervalCheck(interval=0.1)
         self.rate_limit = None
         ':type : approxeng.holochassis.dynamics.RateLimit'
