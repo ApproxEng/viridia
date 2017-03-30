@@ -59,5 +59,5 @@ class Feather:
 
     def _send(self, *sequence):
         gpio.output(self.led_disable_pin, 1)
-        self.i2c.send(self.i2c_address, sequence)
+        self.i2c.send(self.i2c_address, *sequence)
         gpio.output(self.led_disable_pin, 0)
