@@ -5,7 +5,6 @@
 
 #include <I2CHelper.h>
 #include <FastLED.h>
-#include <Adafruit_NeoPixel.h>
 #include "Interval.h"
 
 /*
@@ -17,7 +16,8 @@
 */
 #define ADDRESS 0x31
 #define NUM_LEDS 64
-#define LED_PIN 10
+#define LED_PIN 5
+#define DISABLE_PIN 11
 
 /*
    Volatile state, the hue and hue_variation are used to configure the light
@@ -30,7 +30,6 @@ byte mode = 0; // Mode, defines the kind of light show displayed
 float direction = 0.0; // For directional displays, this is the angle in radians
 Interval ledUpdate(30); // Update for animations
 CRGB leds[NUM_LEDS]; // The LEDs
-Adafruit_NeoPixel strip(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 /*
    Setup - starts up the I2CHelper and Serial connections
@@ -39,10 +38,8 @@ Adafruit_NeoPixel strip(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
    until you connect the monitor.
 */
 void setup() {
-  //FastLED.addLeds<NEOPIXEL, LED_PIN>(leds, NUM_LEDS);
-  //FastLED.setBrightness(100);
-  //strip.setBrightness(100);
-  strip.begin();
+  FastLED.addLeds<NEOPIXEL, LED_PIN>(leds, NUM_LEDS);
+  FastLED.setBrightness(100);
   I2CHelper::begin(ADDRESS);
 }
 
@@ -70,7 +67,7 @@ void loop() {
           hue_variation = I2CHelper::reader.getByte();
           break;
         case 2:
-          strip.setBrightness(I2CHelper::reader.getByte());
+          FastLED.setBrightness(I2CHelper::reader.getByte());
           break;
         case 3:
           direction = I2CHelper::reader.getFloat();
@@ -78,7 +75,7 @@ void loop() {
         default:
           break;
       }
-    }    
+    }
     //I2CHelper::reader.start();
   }
   // Only update the display every 20 milliseconds
@@ -115,15 +112,13 @@ void loop() {
         }
         break;
     }
-    //FastLED.show();
     show();
   }
 }
 
 void show() {
-  for (int i = 0; i < NUM_LEDS; i++) {
-    strip.setPixelColor(i, leds[i].red, leds[i].green, leds[i].blue);
-  }
-  strip.show();
+  if (digitalRead(DISABLE_PIN) == HIGH)
+    return;
+  FastLED.show(); 
 }
 
