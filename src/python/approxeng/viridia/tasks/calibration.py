@@ -4,6 +4,7 @@ from euclid import Vector2
 from time import time
 from math import pi
 
+
 class LinearCalibrationTask(Task):
     """
     Linear motion only depends on the relative angles of each of the wheels. If we define a motion with no rotation
@@ -19,6 +20,7 @@ class LinearCalibrationTask(Task):
     def init_task(self, context):
         self.motion = None
         context.drive.enable_drive()
+        context.drive.reset_dead_reckoning()
 
     def poll_task(self, context, tick):
         if self.motion is None:
@@ -45,13 +47,14 @@ class AngularCalibrationTask(Task):
     def init_task(self, context):
         self.motion = None
         context.drive.enable_drive()
+        context.drive.reset_dead_reckoning()
 
     def poll_task(self, context, tick):
         if self.motion is None:
-            self.motion = Motion(Vector2(0,0),pi/2)
+            self.motion = Motion(Vector2(0, 0), pi / 2)
             self.start_time = time()
         elif time() - self.start_time > 4:
-            self.motion = Motion(Vector2(0,0),0)
+            self.motion = Motion(Vector2(0, 0), 0)
             print context.drive.dead_reckoning.pose
         context.drive.set_motion(self.motion)
         context.drive.update_dead_reckoning()
