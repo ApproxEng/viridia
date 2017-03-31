@@ -17,7 +17,7 @@
 #define ADDRESS 0x31
 #define NUM_LEDS 60
 #define LED_PIN 9
-#define DISABLE_PIN 5
+#define DISABLE_PIN 6
 
 /*
    Volatile state, the hue and hue_variation are used to configure the light
@@ -44,6 +44,7 @@ void setup() {
   FastLED.setBrightness(100);
   FastLED.setDither(0);
   I2CHelper::begin(ADDRESS);
+  pinMode(DISABLE_PIN, INPUT_PULLUP);
 }
 
 /*
@@ -116,11 +117,13 @@ void loop() {
            Mode 2 shows a range from -1 to 1 with the LED at 'direction' highlighted, if in this range
         */
         fade(50);
-        for (int i = -15; i++; i <= 15) {
-          leds[ledIndex(i)].setHSV(hue, 255, 255);
+        for (int i = -15; i <= 15; i++) {
+          leds[ledIndex(i + 30)].setHSV(hue, 255, 100);
         }
         if (direction >= -1 && direction <= 1) {
-          leds[ledIndex((int)(direction * 15.0))].setHSV((hue + 128) % 255, 255, 255);
+          for (int i = -1; i <= 1; i++) {
+            leds[ledIndex((int)(direction * 15.0) + i + 30)].setHSV((hue + 128) % 255, 255, 255);
+          }
         }
         break;
     }
@@ -129,7 +132,7 @@ void loop() {
 }
 
 int ledIndex(int i) {
-  return (i + NUM_LEDS + 5) % NUM_LEDS;
+  return ((i + NUM_LEDS + 5) % NUM_LEDS);
 }
 
 void fade(int fadeBy) {
@@ -165,8 +168,8 @@ int ledForDirection(float d) {
 }
 
 void show() {
-  //if (digitalRead(DISABLE_PIN) == HIGH)
-  //  return;
+  if (digitalRead(DISABLE_PIN) == HIGH)
+    return;
   FastLED.show();
 }
 
