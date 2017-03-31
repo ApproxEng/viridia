@@ -53,6 +53,7 @@ void setup() {
 
    Update the LEDs if the interval between updates has expired.
 */
+int centreLED;
 void loop() {
   if (I2CHelper::reader.hasNewData()) {
     if (I2CHelper::reader.checksumValid()) {
@@ -98,7 +99,6 @@ void loop() {
         fade(15);
         rotate();
         leds[random(NUM_LEDS)].setHSV(hue + random(-hue_variation, hue_variation), 255, 255);
-        
         break;
       case 1:
         /*
@@ -106,16 +106,23 @@ void loop() {
            for e.g. manual control
         */
         fade(50);
-        int centreLED = ledForDirection(direction);
+        centreLED = ledForDirection(direction);
         for (int i = -4; i <= 4; i++) {
           leds[ledIndex(centreLED + i)].setHSV(hue, 255, 255);
         }
         break;
-
+      case 2:
         /*
-           Mode 2 shows a set of items with a selected item highlighted
+           Mode 2 shows a range from -1 to 1 with the LED at 'direction' highlighted, if in this range
         */
-
+        fade(50);
+        for (int i = -15; i++; i <= 15) {
+          leds[ledIndex(i)].setHSV(hue, 255, 255);
+        }
+        if (direction >= -1 && direction <= 1) {
+          leds[ledIndex((int)(direction * 15.0))].setHSV((hue + 128) % 255, 255, 255);
+        }
+        break;
     }
     show();
   }

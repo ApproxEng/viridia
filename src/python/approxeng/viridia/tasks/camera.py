@@ -33,6 +33,8 @@ class LineFollowerTask(Task):
         context.drive.reset_dead_reckoning()
         # Determine whether, if we lose the line, we should rotate clockwise (True) or counter-clockwise (False)
         self.last_line_to_the_right = True
+        context.feather.set_lighting_mode(2)
+        context.feather.set_direction(-2)
 
     def poll_task(self, context, tick):
         frame = self.stream.read()
@@ -45,15 +47,17 @@ class LineFollowerTask(Task):
             us the x coordinate of the target in mm.
             """
             target_x = lines[0] * 70
+            context.feather.set_direction(lines[0])
             target_y = 70
             context.drive.drive_at(x=target_x, y=target_y, speed=100, turn_speed=pi)
             self.last_line_to_the_right = target_x >= 0
         else:
             # Can't see a line, so rotate towards the side where we last saw one!
+            context.feather.set_direction(-2)
             if self.last_line_to_the_right:
-                context.drive.set_motion(Motion(translation=Vector2(0, 0), rotation=pi))
+                context.drive.set_motion(Motion(translation=Vector2(0, 0), rotation=pi / 2))
             else:
-                context.drive.set_motion(Motion(translation=Vector2(0, 0), rotation=-pi))
+                context.drive.set_motion(Motion(translation=Vector2(0, 0), rotation=-pi / 2))
 
     def shutdown(self, context):
         context.drive.disable_drive()

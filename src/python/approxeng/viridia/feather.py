@@ -45,7 +45,9 @@ class Feather:
         :param mode: 
             Mode, byte.
             0 - Show semi-random rotating pattern
-            1 - Show direction bar
+            1 - Show direction bar. Direction is in radians relative to the normal front of the chassis
+            2 - Show highlighted bar with single direction LED, used to indicate line follower progress. Direction must
+                be -1 to 1, other values lead to no highlight
         """
         self._send(4, mode)
 
