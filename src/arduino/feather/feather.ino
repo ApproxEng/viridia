@@ -28,6 +28,8 @@ byte hue = 0; // Hue, for modes which specify a hue
 byte hue_variation = 30; // Hue variation, where applicable
 byte mode = 0; // Mode, defines the kind of light show displayed
 float direction = 0.0; // For directional displays, this is the angle in radians
+int itemCount = 0;
+int itemIndex = 0;
 Interval ledUpdate(30); // Update for animations
 CRGB leds[NUM_LEDS]; // The LEDs
 
@@ -44,8 +46,6 @@ void setup() {
   I2CHelper::begin(ADDRESS);
 }
 
-CRGB firstLED;
-
 /*
    Each time round the loop we check to see whether the I2CReader has new data. If it has, then read
    off the first byte and use that to interpret the command, reading subsequent data if needed based
@@ -60,9 +60,6 @@ void loop() {
       //Serial.print(F("Command received: "));
       //Serial.println(command, DEC);
       switch (command) {
-        case 4:
-          mode = I2CHelper::reader.getByte();
-          break;
         case 1:
           hue = I2CHelper::reader.getByte();
           hue_variation = I2CHelper::reader.getByte();
@@ -74,6 +71,11 @@ void loop() {
         case 3:
           direction = I2CHelper::reader.getFloat();
           break;
+        case 4:
+          mode = I2CHelper::reader.getByte();
+          break;
+        case 5:
+
         default:
           break;
       }
@@ -92,35 +94,67 @@ void loop() {
            point. This is handy as a waiting mode, or where we don't actually need to show anything
            on the LED ring and just want a bit of bling.
         */
-        for (int i = 0; i < NUM_LEDS; i++) {
-          leds[i].fadeToBlackBy(15);
-        }
-        firstLED = leds[0];
-        for (int i = 0; i < NUM_LEDS - 1; i++) {
-          leds[i] = leds[i + 1];
-        }
-        leds[NUM_LEDS - 1] = firstLED;
+
+        fade(15);
+        rotate();
         leds[random(NUM_LEDS)].setHSV(hue + random(-hue_variation, hue_variation), 255, 255);
+        
         break;
       case 1:
         /*
            Mode 1 shows a single bar at the specified angle. The bar is used to indicate direction
            for e.g. manual control
         */
-        for (int i = 0; i < NUM_LEDS; i++) {
-          leds[i].fadeToBlackBy(50);
-        }
-        int centreLED = (int)((direction / (2.0f * PI)) * ((float)NUM_LEDS))+5;
+        fade(50);
+        int centreLED = ledForDirection(direction);
         for (int i = -4; i <= 4; i++) {
-          leds[(centreLED + i + NUM_LEDS) % NUM_LEDS].setHSV(hue, 255, 255);
-          //Serial.print((centreLED + i + NUM_LEDS) % NUM_LEDS);
-          //Serial.print(F(","));
+          leds[ledIndex(centreLED + i)].setHSV(hue, 255, 255);
         }
-        //Serial.println("");
         break;
+
+        /*
+           Mode 2 shows a set of items with a selected item highlighted
+        */
+
     }
     show();
   }
+}
+
+int ledIndex(int i) {
+  return (i + NUM_LEDS + 5) % NUM_LEDS;
+}
+
+void fade(int fadeBy) {
+  for (int i = 0; i < NUM_LEDS; i++) {
+    leds[i].fadeToBlackBy(fadeBy);
+  }
+}
+
+CRGB wrapLED;
+
+void rotate() {
+  rotate(0, 59, true);
+}
+
+void rotate(int fromLED, int toLED, boolean wrap) {
+  CRGB wrapLED = leds[ledIndex(toLED)];
+  if (toLED < fromLED) {
+    for (int i = toLED; i <= fromLED - 1; i++) {
+      leds[ledIndex(i)] = leds[ledIndex(i + 1)];
+    }
+  } else {
+    for (int i = toLED; i >= fromLED + 1; i--) {
+      leds[ledIndex(i)] = leds[ledIndex(i - 1)];
+    }
+  }
+  if (wrap) {
+    leds[ledIndex(fromLED)] = wrapLED;
+  }
+}
+
+int ledForDirection(float d) {
+  return (int)((direction / (2.0f * PI)) * ((float)NUM_LEDS));
 }
 
 void show() {
