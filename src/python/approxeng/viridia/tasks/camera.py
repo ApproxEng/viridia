@@ -30,10 +30,12 @@ class LineFollowerTask(Task):
         # Set up lighting
         context.feather.set_lighting_mode(2)
         context.feather.set_direction(-2.0)
+	context.feather.set_ring_hue(0)
         # Create stream and pause
         self.stream = VideoStream(usePiCamera=True, resolution=(128, 128)).start()
         sleep(2.0)
-        context.drive.disable_drive()
+	context.feather.set_ring_hue(200)
+        context.drive.enable_drive()
         # The camera is on the back of the robot, so set the front to be at PI radians
         context.drive.front = pi
         # Disable any motion limit we may have in action, it'll just confuse things
@@ -55,7 +57,7 @@ class LineFollowerTask(Task):
             """
             target_x = lines[0] * 70
             target_y = 70
-            context.drive.drive_at(x=target_x, y=target_y, speed=100, turn_speed=pi)
+            context.drive.drive_at(x=target_x, y=target_y, speed=250, turn_speed=pi / 2)
             self.last_line_to_the_right = target_x >= 0
         else:
             # Can't see a line, so rotate towards the side where we last saw one!
