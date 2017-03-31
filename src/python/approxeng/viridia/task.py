@@ -15,8 +15,6 @@ class TaskManager:
         self.i2c = i2c
         self.motors = motors
         self.feather = feather
-        self.camera = camera
-        self.raw_capture = raw_capture
         self.display = display
         self.drive = ViridiaDrive(chassis=self.chassis, motors=self.motors)
         self.home_task = None
@@ -25,8 +23,7 @@ class TaskManager:
         return TaskContext(chassis=self.chassis,
                            joystick=self.joystick,
                            buttons_pressed=self.joystick.buttons.get_and_clear_button_press_history(),
-                           i2c=self.i2c, feather=self.feather, camera=self.camera, raw_capture=self.raw_capture,
-                           motors=self.motors, display=self.display,
+                           i2c=self.i2c, feather=self.feather, motors=self.motors, display=self.display,
                            drive=self.drive)
 
     def run(self, initial_task):
@@ -80,7 +77,7 @@ class TaskContext:
 
     """
 
-    def __init__(self, chassis, joystick, buttons_pressed, i2c, motors, feather, camera, raw_capture, display, drive):
+    def __init__(self, chassis, joystick, buttons_pressed, i2c, motors, feather, display, drive):
         """
         Create a new task context
 
@@ -100,11 +97,6 @@ class TaskContext:
         :param feather:
             An instance of :class:`approxeng.viridia.feather.Feather` used to interface to everything attached to
             the Adafruit Feather over I2C. This includes the lights and the solenoid kicker actuator
-        :param camera:
-            An instance of :class:`picamera.Camera`
-        :param raw_capture:
-            An instance of :class:`picamera.array.PiRGBArray` used to contain raw data read from the camera to avoid
-            having to mess around with JPEG encoding etc.
         :param display:
             An instance of :class:`approxeng.viridia.display.Display` used to show textual messages to the user either
             by displaying them on a hardware module or by printing to stdout
@@ -118,8 +110,6 @@ class TaskContext:
         self.i2c = i2c
         self.motors = motors
         self.feather = feather
-        self.camera = camera
-        self.raw_capture = raw_capture
         self.display = display
         self.drive = drive
 
