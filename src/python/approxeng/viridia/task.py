@@ -45,6 +45,8 @@ class TaskManager:
             try:
                 context = self._build_context()
                 if context.pressed('home'):
+                    if active_task is not None:
+                        active_task.shutdown(context)
                     active_task = ClearStateTask(self.home_task)
                     task_initialised = False
                     tick = 0
@@ -63,6 +65,8 @@ class TaskManager:
                     active_task.init_task(context=context)
                     task_initialised = True
             except Exception as e:
+                if active_task is not None:
+                    active_task.shutdown()
                 active_task = ClearStateTask(ErrorTask(e))
                 task_initialised = False
 

@@ -24,7 +24,7 @@ class LineFollowerTask(Task):
         """
         self.stream = VideoStream(usePiCamera=True, resolution=(128, 128)).start()
         sleep(2.0)
-        context.drive.enable_drive()
+        context.drive.disable_drive()
         # The camera is on the back of the robot, so set the front to be at PI radians
         context.drive.front = pi
         # Disable any motion limit we may have in action, it'll just confuse things
@@ -34,7 +34,7 @@ class LineFollowerTask(Task):
         # Determine whether, if we lose the line, we should rotate clockwise (True) or counter-clockwise (False)
         self.last_line_to_the_right = True
         context.feather.set_lighting_mode(2)
-        context.feather.set_direction(-2)
+        context.feather.set_direction(-2.0)
 
     def poll_task(self, context, tick):
         frame = self.stream.read()
@@ -60,6 +60,7 @@ class LineFollowerTask(Task):
                 context.drive.set_motion(Motion(translation=Vector2(0, 0), rotation=-pi / 2))
 
     def shutdown(self, context):
+        print 'Disposing of streams'
         context.drive.disable_drive()
         context.drive.front = 0
         if self.stream is not None:
