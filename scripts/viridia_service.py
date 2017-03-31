@@ -74,15 +74,6 @@ drop_privileges(uid_name='pi', gid_name='pi')
 # Set up a display class, either interfacing to an actual display or printing to the console
 display = PrintDisplay()
 
-# Set up the camera
-camera_width = 640
-camera_height = 480
-camera = PiCamera()
-camera.resolution = (camera_width, camera_height)
-camera.framerate = 32
-# Sleep to give the camera a chance to startup properly
-sleep(0.1)
-
 # Motors
 motors = Motors(i2c=i2c)
 
@@ -106,10 +97,6 @@ while 1:
                 motors=motors,
                 # Feather, used to control lights and kicker solenoid
                 feather=Feather(i2c=i2c),
-                # Reference to PiCamera object
-                camera=camera,
-                # ...and the raw buffer used to read camera data
-                raw_capture=PiRGBArray(camera, size=(camera_width, camera_height)),
                 # Display, used to print messages either to hardware or to stdout
                 display=display
             )

@@ -9,7 +9,7 @@ class TaskManager:
     Manages the task loop
     """
 
-    def __init__(self, chassis, joystick, i2c, motors, feather, camera, raw_capture, display):
+    def __init__(self, chassis, joystick, i2c, motors, feather, display):
         self.chassis = chassis
         self.joystick = joystick
         self.i2c = i2c
