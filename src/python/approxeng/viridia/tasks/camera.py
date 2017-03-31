@@ -3,6 +3,8 @@ from approxeng.picamera import find_lines
 from imutils.video import VideoStream
 from time import sleep
 from math import pi
+from approxeng.holochassis.chassis import Motion
+from euclid import Vector2
 
 
 class LineFollowerTask(Task):
@@ -13,6 +15,7 @@ class LineFollowerTask(Task):
     def __init__(self):
         super(LineFollowerTask, self).__init__(task_name='Line follower')
         self.stream = None
+        self.last_line_to_the_right = True
 
     def init_task(self, context):
         """
@@ -28,6 +31,8 @@ class LineFollowerTask(Task):
         context.drive.set_motion_limit(None)
         # Reset dead reckoning, we don't really use it but it'll save confusion later if this changes
         context.drive.reset_dead_reckoning()
+        # Determine whether, if we lose the line, we should rotate clockwise (True) or counter-clockwise (False)
+        self.last_line_to_the_right = True
 
     def poll_task(self, context, tick):
         frame = self.stream.read()
@@ -40,8 +45,15 @@ class LineFollowerTask(Task):
             us the x coordinate of the target in mm.
             """
             target_x = lines[0] * 70
-            target_y = 150
+            target_y = 70
             context.drive.drive_at(x=target_x, y=target_y, speed=100, turn_speed=pi)
+            self.last_line_to_the_right = target_x >= 0
+        else:
+            # Can't see a line, so rotate towards the side where we last saw one!
+            if self.last_line_to_the_right:
+                context.drive.set_motion(Motion(translation=Vector2(0, 0), rotation=pi))
+            else:
+                context.drive.set_motion(Motion(translation=Vector2(0, 0), rotation=-pi))
 
     def shutdown(self, context):
         context.drive.disable_drive()
