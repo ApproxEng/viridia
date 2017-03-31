@@ -1,7 +1,9 @@
 __author__ = 'tom'
 
-import RPi.GPIO as gpio
 from time import sleep
+
+import RPi.GPIO as gpio
+
 
 class Feather:
     """
