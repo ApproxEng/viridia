@@ -56,6 +56,7 @@ class TaskManager:
                     if new_task is None:
                         tick += 1
                     else:
+                        active_task.shutdown(context)
                         active_task = new_task
                         if isinstance(active_task, ExitTask):
                             active_task = ClearStateTask(self.home_task)
@@ -175,6 +176,15 @@ class Task:
             that task.
         """
         return None
+
+    def shutdown(self, context):
+        """
+        Called when the task exits, clear up any state which won't be handled by the ClearStateTask
+        
+        :param context:
+            The context
+        """
+        pass
 
 
 class ClearStateTask(Task):
