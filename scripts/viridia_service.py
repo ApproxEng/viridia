@@ -86,7 +86,7 @@ while 1:
             task_manager = TaskManager(
                 # Chassis, configure for robot dimensions
                 chassis=get_regular_triangular_chassis(
-                    wheel_distance=160,
+                    wheel_distance=204,
                     wheel_radius=29.5,
                     max_rotations_per_second=500 / 60),
                 # Joystick bound by resource context
