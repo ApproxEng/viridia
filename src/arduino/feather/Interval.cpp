@@ -2,7 +2,7 @@
 
 Interval::Interval(int interval) {
   _interval = interval;
-  _lastRunTime = 0;
+  _lastRunTime = 0l;
 }
 
 boolean Interval::shouldRun() {

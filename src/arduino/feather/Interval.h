@@ -9,7 +9,7 @@ class Interval {
     Interval(int interval);
   private:
     int _interval;
-    long _lastRunTime;
+    unsigned long _lastRunTime;
 };
 
 

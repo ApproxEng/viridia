@@ -10,9 +10,6 @@ from signal import signal, SIGINT, SIGTERM
 from sys import exit
 from time import sleep
 
-from picamera import PiCamera
-from picamera.array import PiRGBArray
-
 from approxeng.holochassis.chassis import get_regular_triangular_chassis
 from approxeng.input.asyncorebinder import ControllerResource
 from approxeng.input.dualshock4 import DualShock4, CONTROLLER_NAME
@@ -21,7 +18,10 @@ from approxeng.viridia.display import PrintDisplay
 from approxeng.viridia.feather import Feather
 from approxeng.viridia.motors import Motors
 from approxeng.viridia.task import TaskManager
+from approxeng.viridia.tasks.calibration import LinearCalibrationTask, AngularCalibrationTask
+from approxeng.viridia.tasks.camera import LineFollowerTask
 from approxeng.viridia.tasks.main_menu import MenuTask
+from approxeng.viridia.tasks.manual_control import ManualMotionTask
 
 
 def drop_privileges(uid_name='nobody', gid_name='nogroup'):
@@ -77,12 +77,12 @@ display = PrintDisplay()
 # Motors
 motors = Motors(i2c=i2c)
 
-print motors.read_angles()
-
 while 1:
     try:
+        # Attempt to acquire and bind to a controller
         with ControllerResource(controller=DualShock4(), device_name=CONTROLLER_NAME) as joystick:
             display.show("Found dualshock4 at {}".format(joystick))
+            # Create a task manager
             task_manager = TaskManager(
                 # Chassis, configure for robot dimensions
                 chassis=get_regular_triangular_chassis(
@@ -100,7 +100,12 @@ while 1:
                 # Display, used to print messages either to hardware or to stdout
                 display=display
             )
-            task_manager.run(initial_task=MenuTask())
+            # Start the task manager with a MenuTask, this in turn allows for other tasks to be
+            # launched; pressing the home button will reset the task to whatever's passed to the
+            # initial_task argument here, so in this case will return to the top level menu.
+            task_manager.run(initial_task=MenuTask(
+                tasks=[ManualMotionTask(), LinearCalibrationTask(), AngularCalibrationTask(), LineFollowerTask()]))
     except IOError:
+        # There wasn't a controller, wait for a bit and try again
         display.show("Waiting for joystick")
         sleep(0.3)

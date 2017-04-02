@@ -62,6 +62,23 @@ class Feather:
         """
         self._send(3, float(radians))
 
+    def kick(self):
+        """
+        Send a signal to fire the kicker, there are no arguments - it either kicks or it doesn't!
+        """
+        self._send(100)
+
+    def set_solid_state_relay(self, active=True):
+        """
+        Activate or deactivate the solid state relay
+        
+        :param active: True to activate, False to de-activate
+        """
+        if active:
+            self._send(91)
+        else:
+            self._send(90)
+
     def _send(self, *sequence):
         gpio.output(self.led_disable_pin, 1)
         sleep(0.01)

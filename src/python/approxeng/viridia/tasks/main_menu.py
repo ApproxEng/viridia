@@ -1,9 +1,6 @@
 from time import sleep
 
 from approxeng.viridia.task import ClearStateTask, Task
-from approxeng.viridia.tasks.manual_control import ManualMotionTask
-from approxeng.viridia.tasks.calibration import LinearCalibrationTask, AngularCalibrationTask
-from approxeng.viridia.tasks.camera import LineFollowerTask
 
 
 class MenuTask(Task):
@@ -11,9 +8,9 @@ class MenuTask(Task):
     Top level menu class
     """
 
-    def __init__(self):
+    def __init__(self, tasks):
         super(MenuTask, self).__init__(task_name='Menu')
-        self.tasks = [ManualMotionTask(), LinearCalibrationTask(), AngularCalibrationTask(), LineFollowerTask()]
+        self.tasks = tasks
         self.selected_task_index = 0
 
     def init_task(self, context):
