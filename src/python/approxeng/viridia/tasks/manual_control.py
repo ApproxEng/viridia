@@ -115,6 +115,8 @@ class ManualMotionTask(Task):
         if self.absolute_motion:
             translate = rotate_vector(translate,
                                       self.front - self.dead_reckoning.pose.orientation)
+        else:
+            translate = rotate_vector(translate, self.front)
 
         if self.pose_display_interval.should_run():
             if self.absolute_motion:
