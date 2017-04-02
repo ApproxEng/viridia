@@ -76,13 +76,12 @@ int centreLED;
 void loop() {
   // Check whether the kicker has been fired, and, if it has, see whether the timer has
   // expired and reset the pin if so.
-  if (kickerTriggeredAt != 0l) {
-    unsigned long now = millis();
-    if (now - kickerTriggeredAt > KICKER_MILLIS) {
-      digitalWrite(KICKER_PIN, HIGH);
-      kickerTriggeredAt = 0;
-    }
+  unsigned long now = millis();
+  if (now - kickerTriggeredAt > KICKER_MILLIS) {
+    digitalWrite(KICKER_PIN, HIGH);
+    kickerTriggeredAt = 0;
   }
+
   // Check for new data on the I2C bus
   if (I2CHelper::reader.hasNewData()) {
     if (I2CHelper::reader.checksumValid()) {
@@ -114,7 +113,7 @@ void loop() {
           break;
         case 100:
           digitalWrite(KICKER_PIN, LOW);
-          kickerTriggeredAt = millis();
+          kickerTriggeredAt = now;
           break;
         default:
           break;

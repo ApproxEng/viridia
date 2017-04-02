@@ -19,7 +19,7 @@
 #endif
 
 // Comment this out to remove serial terminal functionality
-#define SERIAL_ENABLED
+//#define SERIAL_ENABLED
 
 #ifdef SERIAL_ENABLED
 #define SERIAL(message) DO_SERIAL(message)
@@ -33,7 +33,7 @@ Interval printAngle(500);
 // Set up interrupts, pins, SPI, I2C etc.
 void setup() {
   digitalWrite(ledPin, HIGH);
-  vKp = 0.9;
+  vKp = 0.001;
   vKi = 0.001;
   vKd = 0.0;
   vLPF = 100.0;
@@ -93,7 +93,7 @@ void setSpeed(float rpm) {
   mode = 'v';
   r = rpm;
   if (r < 5.0) {
-    vKi = 0.03;
+    vKi = 0.02;
   } else if (r < 50) {
     vKi = 0.02;
   } else {
