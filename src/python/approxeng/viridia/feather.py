@@ -29,6 +29,7 @@ class Feather:
         self.led_disable_pin = led_disable_pin
         gpio.setmode(gpio.BCM)
         gpio.setup(led_disable_pin, gpio.OUT)
+        gpio.output(self.led_disable_pin, 0)
 
     def set_ring_hue(self, hue, spread=30):
         """
