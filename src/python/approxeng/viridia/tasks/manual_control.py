@@ -1,3 +1,5 @@
+from math import radians
+
 from euclid import Vector2
 
 from approxeng.holochassis.chassis import rotate_vector, Motion, DeadReckoning
@@ -82,13 +84,19 @@ class ManualMotionTask(Task):
         # Check joystick buttons to see if we need to change mode or reset anything
         if context.pressed('triangle'):
             self._set_relative_motion(context)
-        elif context.pressed('square'):
+        if context.pressed('square'):
             self._set_absolute_motion(context)
-        elif context.pressed('circle'):
+        if context.pressed('circle'):
             self.dead_reckoning.reset()
             context.display.show("Absolute bearing reset")
-        elif context.pressed('cross'):
+        if context.pressed('cross'):
             self._toggle_limit_mode(context)
+        if context.pressed('dleft'):
+            self.front = self.front - radians(60)
+        if context.pressed('dright'):
+            self.front = self.front + radians(60)
+        if context.pressed('dup'):
+            context.feather.kick()
 
         # Check to see whether the minimum interval between dead reckoning updates has passed
         if self.pose_update_interval.should_run():
